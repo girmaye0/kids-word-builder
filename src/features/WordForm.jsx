@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import styled from "styled-components";
-import TextInputWithLabel from "../shared/TextInputWithLabel";
+import TextInputWithLabel from "../shared/TextInputWithLabel"; // Changed from WordInputWithLabel back to TextInputWithLabel as per available artifacts
 
 const StyledForm = styled.form`
   display: flex;
@@ -40,46 +40,50 @@ const StyledInputAndButtonContainer = styled.div`
   width: 100%; /* Ensure this container takes full width */
 `;
 
-function TodoForm({ onAddTodo, isSaving }) {
-  const [title, setTitle] = useState("");
-  const todoTitleInput = useRef(null);
+function WordForm({ onAddWord, isSaving }) {
+  // Renamed onAddTodo to onAddWord
+  const [newWord, setNewWord] = useState(""); // Renamed title to newWord
+  const wordInputRef = useRef(null); // Renamed todoTitleInput to wordInputRef
 
   const handleInputChange = (event) => {
-    setTitle(event.target.value);
+    setNewWord(event.target.value); // Use setNewWord
   };
 
-  const handleAddTodo = (event) => {
+  const handleAddWord = (event) => {
+    // Renamed handleAddTodo to handleAddWord
     event.preventDefault();
-    if (title.trim()) {
-      onAddTodo(title.trim());
-      setTitle("");
-      todoTitleInput.current.focus();
+    if (newWord.trim()) {
+      // Use newWord
+      onAddWord(newWord.trim()); // Use onAddWord, newWord
+      setNewWord(""); // Use setNewWord
+      wordInputRef.current.focus(); // Use wordInputRef
     }
   };
 
   return (
-    <StyledForm onSubmit={handleAddTodo}>
+    <StyledForm onSubmit={handleAddWord}>
+      {" "}
+      {/* Use handleAddWord */}
       <StyledInputAndButtonContainer>
         <TextInputWithLabel
-          elementId="todoTitle"
-          label="Todo"
-          value={title}
-          ref={todoTitleInput}
+          elementId="wordTitle" // Renamed elementId to wordTitle
+          label="Word" // Renamed label to Word
+          value={newWord} // Use newWord
+          ref={wordInputRef} // Use wordInputRef
           onChange={handleInputChange}
           style={{
             flex: 1,
           }}
         />
         <StyledButton
-          className="add-todo-button"
           type="submit"
-          disabled={title.trim() === "" || isSaving}
+          disabled={newWord.trim() === "" || isSaving} // Use newWord
         >
-          {isSaving ? "Adding..." : "Add Todo"}
+          {isSaving ? "Adding..." : "Add Word"} {/* Updated button text */}
         </StyledButton>
       </StyledInputAndButtonContainer>
     </StyledForm>
   );
 }
 
-export default TodoForm;
+export default WordForm;

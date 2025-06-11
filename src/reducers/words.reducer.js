@@ -1,13 +1,13 @@
 const actions = {
-  fetchTodos: "FETCH_TODOS",
-  loadTodos: "LOAD_TODOS",
-  addTodo: "ADD_TODO",
-  updateTodo: "UPDATE_TODO",
-  completeTodo: "COMPLETE_TODO",
-  revertTodo: "REVERT_TODO",
-  startRequest: "START_REQUEST",
-  endRequest: "END_REQUEST",
+  fetchWords: "FETCH_WORDS",
+  loadWords: "LOAD_WORDS",
   setLoadError: "SET_LOAD_ERROR",
+  startRequest: "START_REQUEST",
+  addWord: "ADD_WORD",
+  endRequest: "END_REQUEST",
+  updateWord: "UPDATE_WORD",
+  toggleLearnedStatus: "TOGGLE_LEARNED_STATUS",
+  revertWord: "REVERT_WORD",
   clearError: "CLEAR_ERROR",
   setSortField: "SET_SORT_FIELD",
   setSortDirection: "SET_SORT_DIRECTION",
@@ -15,7 +15,7 @@ const actions = {
 };
 
 const initialState = {
-  todoList: [],
+  wordList: [],
   isLoading: false,
   errorMessage: "",
   isSaving: false,
@@ -26,26 +26,34 @@ const initialState = {
 
 const reducer = (state = initialState, action) => {
   switch (action.type) {
-    case actions.fetchTodos:
+    case actions.fetchWords:
       return { ...state, isLoading: true, errorMessage: "" };
 
-    case actions.loadTodos:
-      const fetchedTodos = action.records.map((record) => ({
+    case actions.loadWords:
+      const fetchedWords = action.records.map((record) => ({
         id: record.id,
-        ...record.fields,
-        isCompleted: record.fields.isCompleted || false,
+        fields: {
+          Word: record.fields.Word || "",
+          IsLearned: record.fields.IsLearned || false,
+          ...record.fields,
+        },
+        createdTime: record.createdTime,
       }));
-      return { ...state, todoList: fetchedTodos, isLoading: false };
+      return { ...state, wordList: fetchedWords, isLoading: false };
 
-    case actions.addTodo:
-      const savedTodo = {
+    case actions.addWord:
+      const savedWord = {
         id: action.record.id,
-        ...action.record.fields,
-        isCompleted: action.record.fields.isCompleted || false,
+        fields: {
+          Word: action.record.fields.Word || "",
+          IsLearned: action.record.fields.IsLearned || false,
+          ...action.record.fields,
+        },
+        createdTime: action.record.createdTime,
       };
       return {
         ...state,
-        todoList: [...state.todoList, savedTodo],
+        wordList: [...state.wordList, savedWord],
         isSaving: false,
       };
 
@@ -75,32 +83,32 @@ const reducer = (state = initialState, action) => {
     case actions.setQueryString:
       return { ...state, queryString: action.query };
 
-    case actions.revertTodo:
-      if (action.originalTodo) {
+    case actions.revertWord:
+      if (action.originalWord) {
         return {
           ...state,
-          todoList: state.todoList.map((todo) =>
-            todo.id === action.originalTodo.id
-              ? { ...action.originalTodo }
-              : todo
+          wordList: state.wordList.map((word) =>
+            word.id === action.originalWord.id
+              ? { ...action.originalWord }
+              : word
           ),
         };
-      } else if (action.originalTodos) {
+      } else if (action.originalWords) {
         return {
           ...state,
-          todoList: action.originalTodos,
+          wordList: action.originalWords,
         };
       }
       return state;
 
-    case actions.updateTodo:
-      const updatedTodoList = state.todoList.map((todo) =>
-        todo.id === action.editedTodo.id ? { ...action.editedTodo } : todo
+    case actions.updateWord:
+      const updatedWordList = state.wordList.map((word) =>
+        word.id === action.editedWord.id ? { ...action.editedWord } : word
       );
 
       let newState = {
         ...state,
-        todoList: updatedTodoList,
+        wordList: updatedWordList,
       };
 
       if (action.error) {
@@ -108,13 +116,16 @@ const reducer = (state = initialState, action) => {
       }
       return newState;
 
-    case actions.completeTodo:
+    case actions.toggleLearnedStatus:
       return {
         ...state,
-        todoList: state.todoList.map((todo) =>
-          todo.id === action.id
-            ? { ...todo, isCompleted: !todo.isCompleted }
-            : todo
+        wordList: state.wordList.map((word) =>
+          word.id === action.id
+            ? {
+                ...word,
+                fields: { ...word.fields, IsLearned: !word.fields.IsLearned },
+              }
+            : word
         ),
       };
 

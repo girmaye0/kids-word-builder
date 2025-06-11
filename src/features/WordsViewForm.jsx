@@ -78,7 +78,7 @@ const StyledSortGroup = styled.div`
   align-items: center;
 `;
 
-function TodosViewForm({
+function WordsViewForm({
   sortField,
   setSortField,
   sortDirection,
@@ -124,12 +124,13 @@ function TodosViewForm({
   return (
     <StyledFormView onSubmit={preventRefresh}>
       <StyledSearchRow>
-        <StyledLabel htmlFor="search">Search todos:</StyledLabel>
+        <StyledLabel htmlFor="search">Search words:</StyledLabel>
         <StyledInput
           type="text"
           id="search"
           value={localQueryString}
           onChange={handleLocalSearchInputChange}
+          placeholder="Search words..."
         />
         <StyledButton type="button" onClick={clearSearch}>
           Clear
@@ -143,7 +144,7 @@ function TodosViewForm({
             value={sortField}
             onChange={handleSortFieldChange}
           >
-            <option value="title">Title</option>
+            <option value="Word">Word</option>
             <option value="createdTime">Time added</option>
           </StyledSelect>
         </StyledSortGroup>
@@ -163,4 +164,4 @@ function TodosViewForm({
   );
 }
 
-export default TodosViewForm;
+export default WordsViewForm;

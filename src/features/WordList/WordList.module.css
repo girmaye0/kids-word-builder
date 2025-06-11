@@ -1,0 +1,111 @@
+.wordList {
+  /* Renamed from .todoList for consistency */
+  margin-bottom: 20px;
+  padding: 0; /* Removes default list padding */
+  list-style: none; /* Removes default list item bullets */
+}
+
+.wordItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.wordTitle {
+  flex: 1;
+  margin-right: 10px;
+  cursor: pointer;
+  font-size: 1.3em;
+  color: #333;
+  font-weight: bold;
+  word-break: break-word;
+}
+
+.learnedWordTitle {
+  text-decoration: line-through;
+  color: #888;
+  font-style: italic;
+  font-size: 1.3em;
+  font-weight: normal;
+  word-break: break-word;
+}
+
+.editContainer {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+}
+
+.editInput {
+  padding: 10px;
+  border: 2px solid #a5d6a7;
+  border-radius: 8px;
+  margin-right: 10px;
+  flex: 1;
+  font-size: 1.1em;
+  box-sizing: border-box;
+}
+
+.editInput:focus {
+  outline: none;
+  border-color: #2e7d32;
+  box-shadow: 0 0 5px rgba(46, 125, 50, 0.3);
+}
+
+.saveButton,
+.cancelButton,
+.editButton,
+.deleteButton {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  font-size: 0.95em;
+  font-weight: bold;
+  transition:
+    background-color 0.3s ease,
+    transform 0.1s ease;
+  flex-shrink: 0;
+}
+
+.saveButton {
+  background-color: #4caf50;
+  margin-right: 8px;
+}
+
+.saveButton:hover {
+  background-color: #367c39;
+  transform: translateY(-1px);
+}
+
+.cancelButton {
+  background-color: #ffc107;
+  color: #333;
+}
+
+.cancelButton:hover {
+  background-color: #ffb300;
+  transform: translateY(-1px);
+}
+
+.editButton {
+  background-color: #2196f3;
+  margin-right: 8px;
+}
+
+.editButton:hover {
+  background-color: #0b7dda;
+  transform: translateY(-1px);
+}
+
+.deleteButton {
+  background-color: #f44336;
+}
+
+.deleteButton:hover {
+  background-color: #d32f2f;
+  transform: translateY(-1px);
+}

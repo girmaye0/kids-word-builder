@@ -6,7 +6,7 @@ const Container = styled.div`
   flex-direction: row;
   align-items: center;
   gap: 8px;
-  width: 50%;
+  width: 50%; /* Consider making this responsive or pass as a prop if it needs to change */
 `;
 
 const StyledLabel = styled.label`
@@ -32,7 +32,7 @@ const StyledInput = styled.input`
   }
 `;
 
-const TextInputWithLabel = forwardRef(
+const WordInputWithLabel = forwardRef(
   ({ elementId, label, value, onChange }, ref) => {
     return (
       <Container>
@@ -49,6 +49,6 @@ const TextInputWithLabel = forwardRef(
   }
 );
 
-TextInputWithLabel.displayName = "TextInputWithLabel";
+WordInputWithLabel.displayName = "WordInputWithLabel";
 
-export default TextInputWithLabel;
+export default WordInputWithLabel;

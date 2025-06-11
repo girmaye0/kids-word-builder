@@ -1,17 +1,73 @@
-# Simple To-Do List App
+Kids Word Builder App
+Welcome to the Kids Word Builder app! This fun and interactive application is designed to help first graders build and learn new words. It provides a simple and engaging way for children to practice their vocabulary.
+Features
+• Add New Words: Easily add new words to the list.
+• Mark as Learned: Toggle words as "learned" to track progress.
+• Edit Words: Correct or update existing words.
+• Delete Words: Remove words from the list.
+• Search Functionality: Find specific words quickly.
+• Sorting Options: Sort words by their name or the time they were added.
+• Pagination: Navigate through long lists of words with ease.
+• Kid-Friendly UI: Bright, colorful, and intuitive interface.
 
-This is a basic React application that displays a list of to-do items.
+Installation
+To get this app up and running on your local machine, follow these simple steps:
+Prerequisites
+• Node.js (LTS version recommended)
+• npm (Node Package Manager, comes with Node.js)
+• An Airtable account with a "Word" base and a "Words" table containing at least two fields:
 
-## Overview
+- Word (Single line text)
+- IsLearned (Checkbox)
+  Steps
 
-This application demonstrates how to render a list of items using React's `map()` function. It uses a hardcoded array of to-do objects and displays them as list items.
+1. Clone the Repository:
+2. git clone <your-repository-url>
+3. cd kids-word-builder
 
-1. I cloned the repository using gitbash.
-2. Installed dependencies.
-3. Navigate to project directory
-4. Start the dev server -npm run dev
-5. Creating branch -week-01-setup
-6. Writting my- todos- list code
+4. Install Dependencies:
+5. npm install
 
-week -3 is about props and states
-week-4 addressed basic hooks, event & handlers, and updating states
+6. Set up Environment Variables: Create a .env file in the root directory of your project (if it doesn't already exist). Add your Airtable API credentials to this file:
+7. VITE_BASE_ID=appXXXXXXXXXXXXXX
+8. VITE_TABLE_NAME=Words
+9. VITE_PAT=patXXXXXXXXXXXXXX
+
+Replace appXXXXXXXXXXXXXX with your Airtable Base ID. Replace Words with the exact name of your table (case-sensitive). Replace patXXXXXXXXXXXXXX with your Airtable Personal Access Token (PAT). 10. Run the Application: 11. npm run dev
+
+This will start the development server, and the app will usually open in your default browser at http://localhost:5173 (or another available port).
+User Guide (How to Use)
+Once the app is running, you'll see the main Word List page.
+• Adding a Word:
+
+- At the top, you'll find an input field labeled "Word".
+- Type the new word you want to add.
+- Click the "Add Word" button. The word will appear in your list.
+  • Marking a Word as Learned/Not Learned:
+- Each word in the list has a checkbox image next to it.
+- Click on the checkbox image to toggle whether the word is marked as "learned" (it will show a strikethrough).
+  • Editing a Word:
+- Click on the word text itself. An input field will appear, allowing you to edit the word.
+- Type your changes.
+- Click the "Update" button to save, or "Cancel" to discard changes.
+  • Deleting a Word:
+- Each word has a "Delete" button. Click it to remove the word permanently from your list.
+  • Searching Words:
+- Use the "Search words" input field to filter the list. As you type, the list will automatically update to show only matching words.
+- Click the "Clear" button next to the search bar to remove the search filter.
+  • Sorting Words:
+- Use the "Sort by" dropdown to choose how you want to sort the words (e.g., "Word" for alphabetical order, or "Time added").
+- Use the "Direction" dropdown to choose "Ascending" (A-Z, oldest first) or "Descending" (Z-A, newest first).
+  • Navigating Pages:
+- If you have many words, they will be split into pages.
+- Use the "Previous" and "Next" buttons to move between pages. The current page number and total pages are displayed.
+  • About Page:
+- Click the "About" link in the header to learn more about how this app was built and the technologies used.
+
+Technologies Used
+
+- React: A JavaScript library for building user interfaces.
+- React Router DOM: For declarative routing in React applications.
+- Airtable: A cloud-based spreadsheet-database hybrid used as the backend.
+- CSS Modules: For component-scoped styling.
+- styled-components: For writing CSS-in-JS.

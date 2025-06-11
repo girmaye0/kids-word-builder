@@ -1,47 +1,64 @@
+/* src/shared/Header.module.css */
+
 .headerContainer {
   width: 100%;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px 0;
-  position: relative;
+  flex-direction: column; /* Stack h1 and nav vertically */
+  align-items: center; /* Center h1 horizontally */
+  padding: 25px 0 15px; /* Adjust padding for better visual balance */
+  position: relative; /* Needed for absolute positioning of navbar if desired */
 }
 
 .headerTitle {
-  font-size: 2.5em;
-  color: #333;
-  margin-bottom: 20px;
+  font-family: "Comic Sans MS", cursive; /* Consistent kid-friendly font */
+  font-size: 2.8em; /* Slightly larger title */
+  color: #0056b3; /* Deep blue, matching other headings */
+  margin-bottom: 25px; /* More space below the title */
   text-align: center;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1); /* Subtle text shadow for pop */
 }
 
 .navbar {
-  position: absolute;
-  top: 20px;
-  right: 20px;
+  width: 100%; /* Ensure navbar spans full width */
   display: flex;
-  gap: 15px;
+  justify-content: center; /* Center the navigation links */
+  gap: 35px; /* Increased space between nav links */
+  padding: 18px 0; /* Generous padding for the navbar area */
+  background-color: #ffe0b2; /* Soft orange/peach background for the nav */
+  border-radius: 18px; /* More rounded corners */
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1); /* Slightly softer shadow */
 }
 
 .navLink {
   text-decoration: none;
   font-weight: bold;
-  padding: 8px 15px;
-  border-radius: 5px;
+  padding: 14px 28px; /* Larger padding for easier tapping */
+  border-radius: 15px; /* More rounded corners */
   transition:
     background-color 0.3s ease,
-    color 0.3s ease;
+    color 0.3s ease,
+    transform 0.1s ease;
+  font-size: 1.2em; /* Larger font size for nav links */
+  color: #8d6e63; /* Warm brown color for inactive links */
+}
+
+.navLink:hover {
+  background-color: #ffcc80; /* Lighter orange on hover */
+  transform: translateY(-2px); /* Slight lift effect on hover */
 }
 
 .activeNavLink {
-  color: #777;
-  background-color: #f0f0f0;
+  background-color: #ff8a65; /* A bright, active orange for the current page */
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transform: scale(1.05); /* Slightly bigger when active */
 }
 
 .inactiveNavLink {
-  color: #333;
+  color: #8d6e63; /* Warm brown color for inactive links */
   background-color: transparent;
 }
 
 .inactiveNavLink:hover {
-  background-color: #e9ecef;
+  background-color: #ffcc80; /* Lighter orange on hover */
 }

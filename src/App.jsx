@@ -7,7 +7,7 @@ import {
   useSearchParams,
   useNavigate,
 } from "react-router-dom";
-import TodosPage from "./pages/TodosPage";
+import WordsPage from "./pages/WordsPage";
 import AboutPage from "./pages/AboutPage";
 import NotFound from "./pages/NotFound";
 import Header from "./shared/Header";
@@ -15,28 +15,31 @@ import "./App.css";
 import styles from "./App.module.css";
 
 import {
-  reducer as todosReducer,
-  actions as todoActions,
-  initialState as initialTodosState,
-} from "./reducers/todos.reducer";
+  reducer as wordsReducer,
+  actions as wordsActions,
+  initialState as initialWordsState,
+} from "./reducers/words.reducer";
 
 function App() {
-  const [todoState, dispatch] = useReducer(todosReducer, initialTodosState);
+  const [wordState, dispatch] = useReducer(wordsReducer, initialWordsState);
   const [pageTitle, setPageTitle] = useState("");
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+
   const {
-    todoList,
+    wordList,
     isLoading,
     errorMessage,
     isSaving,
     sortField,
     sortDirection,
     queryString,
-  } = todoState;
+  } = wordState;
+
   const url = `https://api.airtable.com/v0/${import.meta.env.VITE_BASE_ID}/${import.meta.env.VITE_TABLE_NAME}`;
   const token = `Bearer ${import.meta.env.VITE_PAT}`;
+
   const createOptions = useCallback(
     (method, payload) => ({
       method,
@@ -48,18 +51,19 @@ function App() {
     }),
     [token]
   );
+
   const encodeUrl = useCallback(() => {
     let sortQuery = `sort[0][field]=${sortField}&sort[0][direction]=${sortDirection}`;
     let searchQuery = "";
     if (queryString) {
-      searchQuery = `&filterByFormula=SEARCH("${queryString}",title)`;
+      searchQuery = `&filterByFormula=SEARCH("${queryString}",Word)`;
     }
     return encodeURI(`${url}?${sortQuery}${searchQuery}`);
   }, [sortField, sortDirection, queryString, url]);
 
   useEffect(() => {
-    const fetchTodos = async () => {
-      dispatch({ type: todoActions.fetchTodos });
+    const fetchWords = async () => {
+      dispatch({ type: wordsActions.fetchWords });
       try {
         const options = {
           method: "GET",
@@ -72,48 +76,53 @@ function App() {
           throw new Error(`HTTP error! Status: ${resp.status}`);
         }
         const { records } = await resp.json();
-        dispatch({ type: todoActions.loadTodos, records });
+        dispatch({ type: wordsActions.loadWords, records });
       } catch (error) {
-        dispatch({ type: todoActions.setLoadError, error });
+        dispatch({ type: wordsActions.setLoadError, error });
       }
     };
-    fetchTodos();
+    fetchWords();
   }, [encodeUrl, token]);
 
   useEffect(() => {
     if (location.pathname === "/") {
-      setPageTitle("Todo List");
+      setPageTitle("Word List");
     } else if (location.pathname === "/about") {
       setPageTitle("About");
     } else {
       setPageTitle("Not Found");
     }
   }, [location]);
+
   const itemsPerPage = 15;
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
+
   const filteredByQuery = queryString
-    ? todoList.filter((todo) =>
-        todo.title.toLowerCase().includes(queryString.toLowerCase())
+    ? wordList.filter((word) =>
+        word.fields.Word.toLowerCase().includes(queryString.toLowerCase())
       )
-    : todoList;
-  const sortedTodoList = [...filteredByQuery].sort((a, b) => {
+    : wordList;
+
+  const sortedWordList = [...filteredByQuery].sort((a, b) => {
     if (sortField === "createdTime") {
       return sortDirection === "asc"
         ? new Date(a.createdTime) - new Date(b.createdTime)
         : new Date(b.createdTime) - new Date(a.createdTime);
-    } else if (sortField === "title") {
+    } else if (sortField === "Word") {
       return sortDirection === "asc"
-        ? a.title.localeCompare(b.title)
-        : b.title.localeCompare(a.title);
+        ? a.fields.Word.localeCompare(b.fields.Word)
+        : b.fields.Word.localeCompare(a.fields.Word);
     }
     return 0;
   });
-  const totalPages = Math.ceil(sortedTodoList.length / itemsPerPage);
-  const indexOfFirstTodo = (currentPage - 1) * itemsPerPage;
-  const paginatedAndFilteredTodos = sortedTodoList.slice(
-    indexOfFirstTodo,
-    indexOfFirstTodo + itemsPerPage
+
+  const totalPages = Math.ceil(sortedWordList.length / itemsPerPage);
+  const indexOfFirstWord = (currentPage - 1) * itemsPerPage;
+  const paginatedAndFilteredWords = sortedWordList.slice(
+    indexOfFirstWord,
+    indexOfFirstWord + itemsPerPage
   );
+
   const handlePreviousPage = useCallback(() => {
     setSearchParams((prevParams) => {
       const newParams = new URLSearchParams(prevParams);
@@ -121,6 +130,7 @@ function App() {
       return newParams;
     });
   }, [currentPage, setSearchParams]);
+
   const handleNextPage = useCallback(() => {
     setSearchParams((prevParams) => {
       const newParams = new URLSearchParams(prevParams);
@@ -128,6 +138,7 @@ function App() {
       return newParams;
     });
   }, [currentPage, totalPages, setSearchParams]);
+
   useEffect(() => {
     if (
       totalPages > 0 &&
@@ -136,57 +147,60 @@ function App() {
       navigate("/");
     }
   }, [currentPage, totalPages, navigate]);
-  const handleAddTodo = useCallback(
-    async (newTodoTitle) => {
+
+  const handleAddWord = useCallback(
+    async (newWordTitle) => {
       const payload = {
-        records: [{ fields: { title: newTodoTitle, isCompleted: false } }],
+        records: [{ fields: { Word: newWordTitle, IsLearned: false } }],
       };
       const options = createOptions("POST", payload);
       const requestUrl = url;
 
-      dispatch({ type: todoActions.startRequest });
+      dispatch({ type: wordsActions.startRequest });
       try {
         const resp = await fetch(requestUrl, options);
         if (!resp.ok) {
           throw new Error(resp.message);
         }
         const { records } = await resp.json();
-        dispatch({ type: todoActions.addTodo, record: records[0] });
+        dispatch({ type: wordsActions.addWord, record: records[0] });
         setSearchParams((prevParams) => {
           const newParams = new URLSearchParams(prevParams);
           newParams.set(
             "page",
-            Math.ceil((todoList.length + 1) / itemsPerPage).toString()
+            Math.ceil((wordList.length + 1) / itemsPerPage).toString()
           );
           return newParams;
         });
       } catch (error) {
-        console.error("Error adding todo:", error);
-        dispatch({ type: todoActions.setLoadError, error });
+        console.error("Error adding word:", error);
+        dispatch({ type: wordsActions.setLoadError, error });
       } finally {
-        dispatch({ type: todoActions.endRequest });
+        dispatch({ type: wordsActions.endRequest });
       }
     },
     [
       createOptions,
       dispatch,
       url,
-      todoList.length,
+      wordList.length,
       itemsPerPage,
       setSearchParams,
     ]
   );
-  const updateTodo = useCallback(
-    async (editedTodo) => {
-      const originalTodo = todoList.find((todo) => todo.id === editedTodo.id);
-      if (!originalTodo) return;
+
+  const updateWord = useCallback(
+    async (editedWord) => {
+      const originalWord = wordList.find((word) => word.id === editedWord.id);
+      if (!originalWord) return;
+
       const payload = {
         records: [
           {
-            id: editedTodo.id,
+            id: editedWord.id,
             fields: {
-              title: editedTodo.title,
-              isCompleted: editedTodo.isCompleted,
+              Word: editedWord.Word,
+              IsLearned: editedWord.IsLearned,
             },
           },
         ],
@@ -194,38 +208,39 @@ function App() {
       const options = createOptions("PATCH", payload);
       const requestUrl = url;
 
-      dispatch({ type: todoActions.updateTodo, editedTodo: editedTodo });
-      dispatch({ type: todoActions.startRequest });
+      dispatch({ type: wordsActions.updateWord, editedWord: editedWord });
+      dispatch({ type: wordsActions.startRequest });
 
       try {
-        const resp = await fetch(`${requestUrl}/${editedTodo.id}`, options);
+        const resp = await fetch(`${requestUrl}/${editedWord.id}`, options);
         if (!resp.ok) {
           throw new Error(resp.message);
         }
       } catch (error) {
-        console.error("Error updating todo:", error);
+        console.error("Error updating word:", error);
         dispatch({
-          type: todoActions.setLoadError,
-          error: new Error(`${error.message}. Reverting todo...`),
+          type: wordsActions.setLoadError,
+          error: new Error(`${error.message}. Reverting word...`),
         });
-        dispatch({ type: todoActions.revertTodo, originalTodo });
+        dispatch({ type: wordsActions.revertWord, originalWord });
       } finally {
-        dispatch({ type: todoActions.endRequest });
+        dispatch({ type: wordsActions.endRequest });
       }
     },
-    [createOptions, dispatch, todoList, url]
+    [createOptions, dispatch, wordList, url]
   );
-  const completeTodo = useCallback(
-    async (id) => {
-      const originalTodo = todoList.find((todo) => todo.id === id);
-      if (!originalTodo) return;
 
-      dispatch({ type: todoActions.completeTodo, id });
-      dispatch({ type: todoActions.startRequest });
+  const toggleWordLearnedStatus = useCallback(
+    async (id) => {
+      const originalWord = wordList.find((word) => word.id === id);
+      if (!originalWord) return;
+
+      dispatch({ type: wordsActions.toggleLearnedStatus, id });
+      dispatch({ type: wordsActions.startRequest });
 
       const payload = {
         records: [
-          { id: id, fields: { isCompleted: !originalTodo.isCompleted } },
+          { id: id, fields: { IsLearned: !originalWord.fields.IsLearned } },
         ],
       };
       const options = createOptions("PATCH", payload);
@@ -237,33 +252,33 @@ function App() {
           throw new Error(resp.message);
         }
       } catch (error) {
-        console.error("Error updating todo completion:", error);
+        console.error("Error toggling word learned status:", error);
         dispatch({
-          type: todoActions.setLoadError,
+          type: wordsActions.setLoadError,
           error: new Error(
-            `${error.message}. Reverting todo completion status...`
+            `${error.message}. Reverting word learned status...`
           ),
         });
-        dispatch({ type: todoActions.revertTodo, originalTodo });
+        dispatch({ type: wordsActions.revertWord, originalWord });
       } finally {
-        dispatch({ type: todoActions.endRequest });
+        dispatch({ type: wordsActions.endRequest });
       }
     },
-    [createOptions, dispatch, todoList, url]
+    [createOptions, dispatch, wordList, url]
   );
 
-  const deleteTodo = useCallback(
+  const deleteWord = useCallback(
     async (id) => {
-      const originalTodosListAfterOptimisticDelete = todoList.filter(
-        (todo) => todo.id !== id
+      const originalWordListAfterOptimisticDelete = wordList.filter(
+        (word) => word.id !== id
       );
-      const originalTodoItem = todoList.find((todo) => todo.id === id);
+      const originalWordItem = wordList.find((word) => word.id === id);
 
       dispatch({
-        type: todoActions.revertTodo,
-        originalTodos: originalTodosListAfterOptimisticDelete,
+        type: wordsActions.revertWord,
+        originalWords: originalWordListAfterOptimisticDelete,
       });
-      dispatch({ type: todoActions.startRequest });
+      dispatch({ type: wordsActions.startRequest });
 
       const requestUrl = url;
 
@@ -277,24 +292,26 @@ function App() {
           throw new Error(resp.message);
         }
       } catch (error) {
-        console.error("Error deleting todo:", error);
+        console.error("Error deleting word:", error);
         dispatch({
-          type: todoActions.setLoadError,
+          type: wordsActions.setLoadError,
           error: new Error(`${error.message}. Reverting deletion...`),
         });
         dispatch({
-          type: todoActions.revertTodo,
-          originalTodo: originalTodoItem,
+          type: wordsActions.revertWord,
+          originalWord: originalWordItem,
         });
       } finally {
-        dispatch({ type: todoActions.endRequest });
+        dispatch({ type: wordsActions.endRequest });
       }
     },
-    [dispatch, todoList, token, url]
+    [dispatch, wordList, token, url]
   );
+
   const handleDismissError = useCallback(() => {
-    dispatch({ type: todoActions.clearError });
+    dispatch({ type: wordsActions.clearError });
   }, [dispatch]);
+
   return (
     <div className={styles.app}>
       <Header title={pageTitle} />
@@ -303,8 +320,8 @@ function App() {
         <Route
           path="/"
           element={
-            <TodosPage
-              todoList={paginatedAndFilteredTodos}
+            <WordsPage
+              wordList={paginatedAndFilteredWords}
               isLoading={isLoading}
               errorMessage={errorMessage}
               isSaving={isSaving}
@@ -312,12 +329,12 @@ function App() {
               sortDirection={sortDirection}
               queryString={queryString}
               dispatch={dispatch}
-              handleAddTodo={handleAddTodo}
-              updateTodo={updateTodo}
-              completeTodo={completeTodo}
-              deleteTodo={deleteTodo}
+              handleAddWord={handleAddWord}
+              updateWord={updateWord}
+              toggleWordLearnedStatus={toggleWordLearnedStatus}
+              deleteWord={deleteWord}
               handleDismissError={handleDismissError}
-              todoActions={todoActions}
+              wordActions={wordsActions}
               currentPage={currentPage}
               totalPages={totalPages}
               onPreviousPage={handlePreviousPage}
