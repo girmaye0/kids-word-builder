@@ -21,11 +21,6 @@ Kid-Friendly UI: Bright, colorful, and intuitive interface.
 Installation
 To get this app up and running on your local machine, follow these simple steps:
 
-Prerequisites
-Node.js (LTS version recommended)
-
-npm (Node Package Manager, comes with Node.js)
-
 A Firebase project configured for Firestore and Authentication.
 
 Steps
