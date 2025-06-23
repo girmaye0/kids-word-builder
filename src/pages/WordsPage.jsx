@@ -1,13 +1,13 @@
 import React from "react";
-import WordList from "../features/WordList/WordList.jsx"; // Updated import
-import WordForm from "../features/WordForm.jsx"; // Updated import
-import WordsViewForm from "../features/WordsViewForm.jsx"; // Updated import
+import WordList from "../features/WordList/WordList";
+import WordForm from "../features/WordForm";
+import WordsViewForm from "../features/WordsViewForm.jsx";
 import styles from "../App.module.css";
 import logo from "../assets/logo.png";
 import error from "../assets/error.png";
 
 function WordsPage({
-  wordList, // Renamed from todoList
+  wordList,
   isLoading,
   errorMessage,
   isSaving,
@@ -15,12 +15,12 @@ function WordsPage({
   sortDirection,
   queryString,
   dispatch,
-  handleAddWord, // Renamed from handleAddTodo
-  updateWord, // Renamed from updateTodo
-  toggleWordLearnedStatus, // Renamed from completeTodo
-  deleteWord, // Renamed from deleteTodo
+  handleAddWord,
+  updateWord,
+  toggleWordLearnedStatus,
+  deleteWord,
   handleDismissError,
-  wordsActions, // Renamed from todoActions
+  wordActions,
   currentPage,
   totalPages,
   onPreviousPage,
@@ -28,19 +28,16 @@ function WordsPage({
 }) {
   return (
     <>
-      <div className={styles.appHeader}>
-        {" "}
-        {/* Uncommented and updated header */}
+      {/* <div className={styles.appHeader}>
         <img src={logo} alt="Logo" className={styles.appLogo} />
-        <h1>My Words</h1> {/* Updated title */}
-      </div>
-      <WordForm onAddWord={handleAddWord} isSaving={isSaving} />{" "}
-      {/* Updated component and prop */}
-      <WordList // Updated component
-        wordList={wordList} // Updated prop
-        toggleWordLearnedStatus={toggleWordLearnedStatus} // Updated prop
-        onUpdateWord={updateWord} // Updated prop
-        onDeleteWord={deleteWord} // Updated prop
+        <h1>WordWonder</h1>
+      </div> */}
+      <WordForm onAddWord={handleAddWord} isSaving={isSaving} />
+      <WordList
+        wordList={wordList}
+        toggleWordLearnedStatus={toggleWordLearnedStatus}
+        onUpdateWord={updateWord}
+        onDeleteWord={deleteWord}
         isLoading={isLoading}
       />
       <div className={styles.paginationControls}>
@@ -63,20 +60,18 @@ function WordsPage({
         </button>
       </div>
       <hr className={styles.separator} />
-      <WordsViewForm // Updated component
+      <WordsViewForm
         sortField={sortField}
-        setSortField={
-          (value) => dispatch({ type: wordsActions.setSortField, field: value }) // Using wordsActions
+        setSortField={(value) =>
+          dispatch({ type: wordActions.setSortField, field: value })
         }
         sortDirection={sortDirection}
-        setSortDirection={
-          (value) =>
-            dispatch({ type: wordsActions.setSortDirection, direction: value }) // Using wordsActions
+        setSortDirection={(value) =>
+          dispatch({ type: wordActions.setSortDirection, direction: value })
         }
         queryString={queryString}
-        setQueryStringSetter={
-          (value) =>
-            dispatch({ type: wordsActions.setQueryString, query: value }) // Using wordsActions
+        setQueryStringSetter={(value) =>
+          dispatch({ type: wordActions.setQueryString, query: value })
         }
       />
       {errorMessage && (
@@ -90,4 +85,4 @@ function WordsPage({
   );
 }
 
-export default WordsPage; // Changed export name
+export default WordsPage;

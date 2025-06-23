@@ -3,62 +3,73 @@
 .headerContainer {
   width: 100%;
   display: flex;
-  flex-direction: column; /* Stack h1 and nav vertically */
-  align-items: center; /* Center h1 horizontally */
-  padding: 25px 0 15px; /* Adjust padding for better visual balance */
-  position: relative; /* Needed for absolute positioning of navbar if desired */
+  flex-direction: column;
+  align-items: center;
+  padding: 25px 0 15px;
+  position: relative;
+}
+
+.appHeaderContent {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+.appLogo {
+  width: 50px;
+  height: 50px;
 }
 
 .headerTitle {
-  font-family: "Comic Sans MS", cursive; /* Consistent kid-friendly font */
-  font-size: 2.8em; /* Slightly larger title */
-  color: #0056b3; /* Deep blue, matching other headings */
-  margin-bottom: 25px; /* More space below the title */
+  font-family: "Comic Sans MS", cursive;
+  font-size: 2.8em;
+  color: #0056b3;
   text-align: center;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1); /* Subtle text shadow for pop */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .navbar {
-  width: 100%; /* Ensure navbar spans full width */
+  width: 100%;
   display: flex;
-  justify-content: center; /* Center the navigation links */
-  gap: 35px; /* Increased space between nav links */
-  padding: 18px 0; /* Generous padding for the navbar area */
-  background-color: #ffe0b2; /* Soft orange/peach background for the nav */
-  border-radius: 18px; /* More rounded corners */
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1); /* Slightly softer shadow */
+  justify-content: center;
+  gap: 35px;
+  padding: 18px 0;
+  background-color: #ffe0b2;
+  border-radius: 18px;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
 }
 
 .navLink {
   text-decoration: none;
   font-weight: bold;
-  padding: 14px 28px; /* Larger padding for easier tapping */
-  border-radius: 15px; /* More rounded corners */
+  padding: 14px 28px;
+  border-radius: 15px;
   transition:
     background-color 0.3s ease,
     color 0.3s ease,
     transform 0.1s ease;
-  font-size: 1.2em; /* Larger font size for nav links */
-  color: #8d6e63; /* Warm brown color for inactive links */
+  font-size: 1.2em;
+  color: #8d6e63;
 }
 
 .navLink:hover {
-  background-color: #ffcc80; /* Lighter orange on hover */
-  transform: translateY(-2px); /* Slight lift effect on hover */
+  background-color: #ffcc80;
+  transform: translateY(-2px);
 }
 
 .activeNavLink {
-  background-color: #ff8a65; /* A bright, active orange for the current page */
+  background-color: #ff8a65;
   color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  transform: scale(1.05); /* Slightly bigger when active */
+  transform: scale(1.05);
 }
 
 .inactiveNavLink {
-  color: #8d6e63; /* Warm brown color for inactive links */
+  color: #8d6e63;
   background-color: transparent;
 }
 
 .inactiveNavLink:hover {
-  background-color: #ffcc80; /* Lighter orange on hover */
+  background-color: #ffcc80;
 }

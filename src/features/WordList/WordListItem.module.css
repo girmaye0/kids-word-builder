@@ -1,36 +1,34 @@
-/* src/features/WordList/WordListItem.module.css */
-
 .wordItem {
   display: flex;
-  align-items: center; /* Vertically aligns items like checkbox, word, and buttons */
-  justify-content: space-between; /* Distributes space between the word display/edit area and buttons */
-  padding: 10px 0; /* Vertical padding for each word item */
-  border-bottom: 1px solid #e0e0e0; /* Separator line between words */
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .displayContainer {
   display: flex;
   align-items: center;
-  flex-grow: 1; /* Allows the display area to take up available space */
+  flex-grow: 1;
 }
 
 .label {
   display: flex;
   align-items: center;
   cursor: pointer;
-  margin-right: 10px; /* Space between checkbox and word text */
+  margin-right: 10px;
 }
 
 .checkboxImage {
-  width: 24px; /* Slightly larger for easier tapping by kids */
+  width: 24px;
   height: 24px;
-  margin-right: 8px; /* Space between image and hidden checkbox */
+  margin-right: 8px;
   cursor: pointer;
-  transition: transform 0.2s ease-in-out; /* Smooth transition for visual feedback */
+  transition: transform 0.2s ease-in-out;
 }
 
 .checkboxImage:hover {
-  transform: scale(1.1); /* Slight grow effect on hover/tap */
+  transform: scale(1.1);
 }
 
 .hiddenCheckbox {
@@ -41,77 +39,76 @@
 }
 
 .wordTitle {
-  flex: 1; /* Allows the word text to take remaining space */
+  flex: 1;
   margin-right: 10px;
   cursor: pointer;
-  font-size: 1.3em; /* Larger font for readability for first graders */
-  color: #333; /* Standard text color */
+  font-size: 1.3em;
+  color: #333;
   font-weight: bold;
-  word-break: break-word; /* Prevents long words from overflowing */
+  word-break: break-word;
 }
 
 .completedWordTitle {
-  text-decoration: line-through; /* Strikethrough for learned words */
-  color: #888; /* Gray color for learned words */
+  text-decoration: line-through;
+  color: #888;
   font-style: italic;
-  font-size: 1.3em; /* Maintain font size */
-  font-weight: normal; /* Normal weight for learned words */
+  font-size: 1.3em;
+  font-weight: normal;
   word-break: break-word;
 }
 
 .editContainer {
   display: flex;
   align-items: center;
-  flex-grow: 1; /* Allows the edit area to take up available space */
+  flex-grow: 1;
 }
 
 .editInput {
   padding: 10px;
-  border: 2px solid #a5d6a7; /* More prominent border for input */
-  border-radius: 8px; /* More rounded corners for kids */
+  border: 2px solid #a5d6a7;
+  border-radius: 8px;
   margin-right: 10px;
   flex: 1;
-  font-size: 1.1em; /* Good size for typing */
-  box-sizing: border-box; /* Include padding and border in width */
+  font-size: 1.1em;
+  box-sizing: border-box;
 }
 
 .editInput:focus {
   outline: none;
-  border-color: #2e7d32; /* Highlight focus with a friendly green */
+  border-color: #2e7d32;
   box-shadow: 0 0 5px rgba(46, 125, 50, 0.3);
 }
 
-/* Button Styling for consistency */
 .saveButton,
 .cancelButton,
 .editButton,
 .deleteButton {
-  padding: 8px 15px; /* Consistent padding for all action buttons */
+  padding: 8px 15px;
   border: none;
-  border-radius: 8px; /* More rounded corners for friendly look */
+  border-radius: 8px;
   color: white;
   cursor: pointer;
   font-size: 0.95em;
-  font-weight: bold; /* Bold text for buttons */
+  font-weight: bold;
   transition:
     background-color 0.3s ease,
     transform 0.1s ease;
-  flex-shrink: 0; /* Prevents buttons from shrinking */
+  flex-shrink: 0;
 }
 
 .saveButton {
-  background-color: #4caf50; /* Green for save */
+  background-color: #4caf50;
   margin-right: 8px;
 }
 
 .saveButton:hover {
   background-color: #367c39;
-  transform: translateY(-1px); /* Slight lift on hover */
+  transform: translateY(-1px);
 }
 
 .cancelButton {
-  background-color: #ffc107; /* Yellow for cancel */
-  color: #333; /* Darker text for contrast on yellow */
+  background-color: #ffc107;
+  color: #333;
 }
 
 .cancelButton:hover {
@@ -120,7 +117,7 @@
 }
 
 .editButton {
-  background-color: #2196f3; /* Blue for edit */
+  background-color: #2196f3;
   margin-right: 8px;
 }
 
@@ -130,10 +127,21 @@
 }
 
 .deleteButton {
-  background-color: #f44336; /* Red for delete */
+  background-color: #f44336;
 }
 
 .deleteButton:hover {
   background-color: #d32f2f;
   transform: translateY(-1px);
+}
+.speakerIcon {
+  font-size: 1.2em;
+  color: #007bff;
+  cursor: pointer;
+  margin-left: 10px;
+  transition: color 0.2s ease;
+}
+
+.speakerIcon:hover {
+  color: #0056b3;
 }

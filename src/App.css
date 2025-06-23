@@ -1,113 +1,102 @@
-/* src/App.css */
-
-/* General body and root styling for a cheerful background and centering */
 body,
 #root {
-  font-family: "Inter", sans-serif; /* A friendly, legible font */
-  background-color: #e6f7ff; /* A light, cheerful sky blue */
-  color: #333; /* Standard dark text color */
+  font-family: "Inter", sans-serif;
+  background-color: #e6f7ff;
+  color: #333;
   margin: 0;
   padding: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh; /* Ensures the app takes up the full viewport height */
+  min-height: 100vh;
 }
 
-/* General headings for a more playful look */
 h1,
 h2,
 h3 {
-  font-family:
-    "Comic Sans MS", cursive; /* A classic kid-friendly font, adjust if not desired */
-  color: #0056b3; /* A deep blue for headings */
+  font-family: "Comic Sans MS", cursive;
+  color: #0056b3;
 }
 
-/* General button styles for an interactive feel */
 button {
-  background-color: #66bb6a; /* A vibrant green */
+  background-color: #66bb6a;
   color: white;
-  padding: 12px 20px; /* Generous padding for easy tapping */
+  padding: 12px 20px;
   border: none;
-  border-radius: 10px; /* Very rounded corners */
+  border-radius: 10px;
   cursor: pointer;
-  font-size: 1.1em; /* Larger font for buttons */
+  font-size: 1.1em;
   font-weight: bold;
   transition:
     background-color 0.3s ease,
     transform 0.1s ease;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 button:hover:not(:disabled) {
-  background-color: #4caf50; /* Slightly darker green on hover */
-  transform: translateY(-2px); /* Slight lift effect */
+  background-color: #4caf50;
+  transform: translateY(-2px);
 }
 
 button:disabled {
-  background-color: #b0e0e6; /* Lighter, muted blue for disabled state */
+  background-color: #b0e0e6;
   cursor: not-allowed;
   opacity: 0.7;
   box-shadow: none;
 }
 
-/* General input field styles */
 input[type="text"],
 textarea {
-  padding: 12px; /* Generous padding */
-  border: 2px solid #a5d6a7; /* A soft green border */
-  border-radius: 10px; /* Rounded corners */
+  padding: 12px;
+  border: 2px solid #a5d6a7;
+  border-radius: 10px;
   font-size: 1.1em;
   width: 100%;
-  max-width: 450px; /* Slightly wider input for words */
-  box-sizing: border-box; /* Include padding and border in the element's total width */
+  max-width: 450px;
+  box-sizing: border-box;
 }
 
 input:focus,
 textarea:focus {
-  border-color: #2e7d32; /* Darker green on focus */
+  border-color: #2e7d32;
   outline: none;
-  box-shadow: 0 0 8px rgba(46, 125, 50, 0.4); /* Green glowing effect on focus */
+  box-shadow: 0 0 8px rgba(46, 125, 50, 0.4);
 }
 
-/* Styles for the "Add Word" button within the form */
 .add-todo-button {
-  /* Reusing existing class name from App.jsx, but applying new styles */
-  background-color: #ffb300; /* A cheerful orange/yellow */
-  color: #333; /* Dark text for contrast */
-  margin-top: 15px; /* More space above the button */
-  padding: 12px 25px; /* Larger button */
+  background-color: #ffb300;
+  color: #333;
+  margin-top: 15px;
+  padding: 12px 25px;
 }
 
 .add-todo-button:hover:not(:disabled) {
-  background-color: #ffa000; /* Darker orange on hover */
+  background-color: #ffa000;
 }
 
 .add-todo-button:disabled {
-  background-color: #fdd835; /* Lighter yellow for disabled */
+  background-color: #fdd835;
   color: #757575;
 }
 
-/* This .todo-form class might be applied if not using styled-components for the form itself */
 .todo-form {
   display: flex;
   flex-direction: column;
-  align-items: center; /* Center form elements */
+  align-items: center;
   width: 100%;
-  margin-bottom: 25px; /* More space below the form */
+  margin-bottom: 25px;
 }
 
-/* Specific styles for the error message container */
 .errorMessage {
   display: flex;
   align-items: center;
-  gap: 12px; /* Increased gap */
-  color: #d32f2f; /* A clear red for error text */
+  gap: 12px;
+  color: #d32f2f;
   font-weight: bold;
-  border: 3px solid #ef9a9a; /* Thicker, softer red border */
-  padding: 15px; /* More padding for visibility */
-  border-radius: 12px; /* More rounded corners */
-  background-color: #ffebee; /* Lightest red background */
+  border: 3px solid #ef9a9a;
+  padding: 15px;
+  border-radius: 12px;
+  background-color: #ffebee;
   margin-top: 25px;
   width: 100%;
   box-sizing: border-box;
@@ -115,6 +104,6 @@ textarea:focus {
 }
 
 .errorMessage img {
-  width: 28px; /* Larger error icon */
+  width: 28px;
   height: 28px;
 }

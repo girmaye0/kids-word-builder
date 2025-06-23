@@ -1,11 +1,15 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import styles from "./Header.module.css";
+import logo from "../assets/logo.png";
 
-function Header({ title }) {
+function Header() {
   return (
     <header className={styles.headerContainer}>
-      <h1 className={styles.headerTitle}>{title}</h1>
+      <div className={styles.appHeaderContent}>
+        <img src={logo} alt="WordWonder Logo" className={styles.appLogo} />
+        <h1 className={styles.headerTitle}>WordWonder</h1>
+      </div>
       <nav className={styles.navbar}>
         <NavLink
           to="/"

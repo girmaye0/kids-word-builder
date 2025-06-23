@@ -1,33 +1,31 @@
-/* src/App.module.css */
-
 .app {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 20px auto; /* Center the container with vertical margin */
-  max-width: 900px; /* Increased max width for a more spacious feel */
-  padding: 30px; /* More generous padding */
-  border-radius: 20px; /* More rounded corners for a playful look */
-  background-color: #ffffff; /* Clean white background for the main content area */
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); /* More pronounced shadow for depth */
-  border: 4px solid #a5d6a7; /* A subtle, friendly border */
+  margin: 20px auto;
+  max-width: 900px;
+  padding: 30px;
+  border-radius: 20px;
+  background-color: #ffffff;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  border: 4px solid #a5d6a7;
 }
 
 .appHeader {
   display: flex;
   align-items: center;
-  gap: 15px; /* Increased gap for better spacing */
-  margin-bottom: 30px; /* More space below the header */
-  padding-bottom: 10px; /* Add some padding at the bottom of the header */
-  border-bottom: 2px dashed #b0e0e6; /* Playful dashed line separator */
-  width: 100%; /* Ensure it spans the width */
-  justify-content: center; /* Center header content */
+  gap: 15px;
+  margin-bottom: 30px;
+  padding-bottom: 10px;
+  border-bottom: 2px dashed #b0e0e6;
+  width: 100%;
+  justify-content: center;
 }
 
 .appLogo {
-  width: 60px; /* Larger logo for kid appeal */
+  width: 60px;
   height: 60px;
-  animation: bounce 2s infinite ease-in-out; /* Simple bounce animation for fun */
+  animation: bounce 2s infinite ease-in-out;
 }
 
 @keyframes bounce {
@@ -44,62 +42,62 @@
   width: 100%;
   display: flex;
   justify-content: center;
-  gap: 30px; /* More space between nav links */
+  gap: 30px;
   padding: 20px 0;
-  margin-bottom: 30px; /* More space below the navbar */
-  background-color: #ffe0b2; /* A soft orange/peach background for the nav */
-  border-radius: 15px; /* Rounded corners for the nav bar */
+  margin-bottom: 30px;
+  background-color: #ffe0b2;
+  border-radius: 15px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .navLink {
   text-decoration: none;
-  color: #8d6e63; /* A warm brown color for inactive links */
+  color: #8d6e63;
   font-weight: bold;
-  padding: 12px 25px; /* Larger padding for easier tapping */
-  border-radius: 12px; /* More rounded corners */
+  padding: 12px 25px;
+  border-radius: 12px;
   transition:
     background-color 0.3s ease,
     color 0.3s ease,
     transform 0.1s ease;
-  font-size: 1.1em; /* Slightly larger font */
+  font-size: 1.1em;
 }
 
 .navLink:hover {
-  background-color: #ffcc80; /* Lighter orange on hover */
-  transform: translateY(-2px); /* Slight lift effect */
+  background-color: #ffcc80;
+  transform: translateY(-2px);
 }
 
 .activeNavLink {
-  background-color: #ff8a65; /* A bright, active orange for the current page */
+  background-color: #ff8a65;
   color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .separator {
-  width: 80%; /* Slightly narrower separator */
+  width: 80%;
   border: 0;
-  border-top: 3px dotted #c5e1a5; /* Dotted line for a playful look */
-  margin: 30px 0; /* More vertical space */
+  border-top: 3px dotted #c5e1a5;
+  margin: 30px 0;
 }
 
 .paginationControls {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 25px; /* Increased gap between pagination elements */
+  gap: 25px;
   margin-top: 30px;
   margin-bottom: 20px;
   width: 100%;
-  font-size: 1.1em; /* Larger font for pagination text */
+  font-size: 1.1em;
   color: #555;
 }
 
 .paginationButton {
-  padding: 10px 20px; /* Larger buttons */
+  padding: 10px 20px;
   border: none;
-  border-radius: 10px; /* More rounded */
-  background-color: #81c784; /* Soft green */
+  border-radius: 10px;
+  background-color: #81c784;
   color: white;
   cursor: pointer;
   font-size: 1em;
@@ -111,12 +109,12 @@
 }
 
 .paginationButton:hover:not(:disabled) {
-  background-color: #66bb6a; /* Darker green on hover */
+  background-color: #66bb6a;
   transform: translateY(-2px);
 }
 
 .paginationButton:disabled {
-  background-color: #c8e6c9; /* Lighter green for disabled */
+  background-color: #c8e6c9;
   cursor: not-allowed;
   opacity: 0.7;
   box-shadow: none;
@@ -125,30 +123,30 @@
 .errorContainer {
   display: flex;
   align-items: center;
-  gap: 15px; /* More space around content */
-  color: #c62828; /* Deeper red for errors */
+  gap: 15px;
+  color: #c62828;
   font-weight: bold;
-  border: 4px solid #ef5350; /* Thicker, more prominent red border */
-  padding: 20px; /* More padding */
-  border-radius: 15px; /* More rounded corners */
-  background-color: #ffcdd2; /* Lighter red background */
+  border: 4px solid #ef5350;
+  padding: 20px;
+  border-radius: 15px;
+  background-color: #ffcdd2;
   margin-top: 30px;
-  width: 90%; /* Take a larger portion of the container width */
+  width: 90%;
   box-sizing: border-box;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .errorIcon {
-  width: 32px; /* Larger error icon */
+  width: 32px;
   height: 32px;
 }
 
 .aboutPage {
-  padding: 30px; /* More padding for the about page content */
+  padding: 30px;
   text-align: center;
-  max-width: 700px; /* Max width for readability */
-  line-height: 1.6; /* Improved line spacing */
-  font-size: 1.1em; /* Slightly larger base font size */
+  max-width: 700px;
+  line-height: 1.6;
+  font-size: 1.1em;
   color: #444;
 }
 
@@ -167,4 +165,72 @@
 
 .aboutPage p {
   margin-bottom: 15px;
+}
+
+.loadingContainer,
+.authPageContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  min-height: 300px;
+  font-size: 1.5em;
+  color: #555;
+  text-align: center;
+}
+
+.authPageContainer {
+  padding: 20px;
+  margin-top: 50px;
+  margin-bottom: 50px;
+}
+
+.loggedInStatus {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 25px;
+  padding: 15px 25px;
+  background-color: #e8f5e9;
+  border-radius: 12px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 700px;
+  box-sizing: border-box;
+}
+
+.loggedInStatus p {
+  margin: 0;
+  font-size: 1.1em;
+  color: #444;
+}
+
+.loggedInStatus strong {
+  color: #2e7d32;
+}
+
+.logoutButton {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 8px;
+  background-color: #f44336;
+  color: white;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.3s ease;
+}
+
+.logoutButton:hover {
+  background-color: #d32f2f;
+}
+
+.userIdDisplay {
+  font-size: 0.9em;
+  color: #777;
+  word-break: break-all;
+  max-width: 100%;
+  text-align: center;
 }

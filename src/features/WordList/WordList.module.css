@@ -1,8 +1,7 @@
 .wordList {
-  /* Renamed from .todoList for consistency */
   margin-bottom: 20px;
-  padding: 0; /* Removes default list padding */
-  list-style: none; /* Removes default list item bullets */
+  padding: 0;
+  list-style: none;
 }
 
 .wordItem {

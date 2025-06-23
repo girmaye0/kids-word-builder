@@ -2,15 +2,38 @@ import React, { useEffect, useCallback, useReducer, useState } from "react";
 import {
   Routes,
   Route,
-  Link,
+  NavLink,
   useLocation,
   useSearchParams,
   useNavigate,
 } from "react-router-dom";
+
+import { initializeApp } from "firebase/app";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+} from "firebase/auth";
+import {
+  getFirestore,
+  collection,
+  doc,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  query,
+  orderBy,
+} from "firebase/firestore";
+
 import WordsPage from "./pages/WordsPage";
 import AboutPage from "./pages/AboutPage";
 import NotFound from "./pages/NotFound";
 import Header from "./shared/Header";
+import AuthForm from "./components/AuthForm";
+
 import "./App.css";
 import styles from "./App.module.css";
 
@@ -20,12 +43,30 @@ import {
   initialState as initialWordsState,
 } from "./reducers/words.reducer";
 
+// Firebase configuration from environment variables
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
 function App() {
   const [wordState, dispatch] = useReducer(wordsReducer, initialWordsState);
-  const [pageTitle, setPageTitle] = useState("");
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [authErrorMessage, setAuthErrorMessage] = useState("");
 
   const {
     wordList,
@@ -37,81 +78,99 @@ function App() {
     queryString,
   } = wordState;
 
-  const url = `https://api.airtable.com/v0/${import.meta.env.VITE_BASE_ID}/${import.meta.env.VITE_TABLE_NAME}`;
-  const token = `Bearer ${import.meta.env.VITE_PAT}`;
-
-  const createOptions = useCallback(
-    (method, payload) => ({
-      method,
-      headers: {
-        Authorization: token,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    }),
-    [token]
-  );
-
-  const encodeUrl = useCallback(() => {
-    let sortQuery = `sort[0][field]=${sortField}&sort[0][direction]=${sortDirection}`;
-    let searchQuery = "";
-    if (queryString) {
-      searchQuery = `&filterByFormula=SEARCH("${queryString}",Word)`;
-    }
-    return encodeURI(`${url}?${sortQuery}${searchQuery}`);
-  }, [sortField, sortDirection, queryString, url]);
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setAuthLoading(false);
+      if (currentUser) {
+        console.log("User logged in:", currentUser.email || currentUser.uid);
+      } else {
+        console.log("User logged out or not authenticated.");
+        dispatch({ type: wordsActions.loadWords, records: [] });
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const fetchWords = async () => {
+      if (authLoading) {
+        return;
+      }
+      if (!user) {
+        dispatch({ type: wordsActions.loadWords, records: [] });
+        return;
+      }
+
       dispatch({ type: wordsActions.fetchWords });
       try {
-        const options = {
-          method: "GET",
-          headers: {
-            Authorization: token,
-          },
-        };
-        const resp = await fetch(encodeUrl(), options);
-        if (!resp.ok) {
-          throw new Error(`HTTP error! Status: ${resp.status}`);
+        const userWordsCollectionRef = collection(
+          db,
+          "users",
+          user.uid,
+          "words"
+        );
+
+        let q = userWordsCollectionRef;
+
+        if (sortField) {
+          q = query(q, orderBy(sortField, sortDirection));
         }
-        const { records } = await resp.json();
+
+        const querySnapshot = await getDocs(q);
+
+        const records = querySnapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            Word: data.Word || "",
+            IsLearned: data.IsLearned || false,
+            createdTime: data.createdTime
+              ? data.createdTime.toDate().toISOString()
+              : new Date().toISOString(),
+            ...data,
+          };
+        });
+        console.log("Fetched words from Firestore:", records);
         dispatch({ type: wordsActions.loadWords, records });
       } catch (error) {
-        dispatch({ type: wordsActions.setLoadError, error });
+        console.error("Error fetching words from Firestore:", error);
+        dispatch({
+          type: wordsActions.setLoadError,
+          error: new Error(`Failed to fetch words: ${error.message}`),
+        });
       }
     };
     fetchWords();
-  }, [encodeUrl, token]);
-
-  useEffect(() => {
-    if (location.pathname === "/") {
-      setPageTitle("Word List");
-    } else if (location.pathname === "/about") {
-      setPageTitle("About");
-    } else {
-      setPageTitle("Not Found");
-    }
-  }, [location]);
+  }, [user, authLoading, sortField, sortDirection]);
 
   const itemsPerPage = 15;
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
 
   const filteredByQuery = queryString
     ? wordList.filter((word) =>
-        word.fields.Word.toLowerCase().includes(queryString.toLowerCase())
+        word.Word.toLowerCase().includes(queryString.toLowerCase())
       )
     : wordList;
 
   const sortedWordList = [...filteredByQuery].sort((a, b) => {
     if (sortField === "createdTime") {
+      const dateA = new Date(a.createdTime);
+      const dateB = new Date(b.createdTime);
+      const isValidA = !isNaN(dateA.getTime());
+      const isValidB = !isNaN(dateB.getTime());
+
+      if (!isValidA && !isValidB) return 0;
+      if (!isValidA) return sortDirection === "asc" ? 1 : -1;
+      if (!isValidB) return sortDirection === "asc" ? -1 : 1;
+
       return sortDirection === "asc"
-        ? new Date(a.createdTime) - new Date(b.createdTime)
-        : new Date(b.createdTime) - new Date(a.createdTime);
+        ? dateA.getTime() - dateB.getTime()
+        : dateB.getTime() - dateA.getTime();
     } else if (sortField === "Word") {
       return sortDirection === "asc"
-        ? a.fields.Word.localeCompare(b.fields.Word)
-        : b.fields.Word.localeCompare(a.fields.Word);
+        ? a.Word.localeCompare(b.Word)
+        : b.Word.localeCompare(a.Word);
     }
     return 0;
   });
@@ -148,22 +207,75 @@ function App() {
     }
   }, [currentPage, totalPages, navigate]);
 
+  const handleLogin = useCallback(async (email, password) => {
+    try {
+      setAuthErrorMessage("");
+      await signInWithEmailAndPassword(auth, email, password);
+      console.log("User logged in successfully!");
+      return { success: true };
+    } catch (error) {
+      console.error("Login failed:", error.message);
+      setAuthErrorMessage(error.message);
+      return { success: false, error: error.message };
+    }
+  }, []);
+
+  const handleSignup = useCallback(async (email, password) => {
+    try {
+      setAuthErrorMessage("");
+      await createUserWithEmailAndPassword(auth, email, password);
+      console.log("User signed up successfully!");
+      return { success: true };
+    } catch (error) {
+      console.error("Signup failed:", error.message);
+      setAuthErrorMessage(error.message);
+      return { success: false, error: error.message };
+    }
+  }, []);
+
+  const handleLogout = useCallback(async () => {
+    try {
+      await signOut(auth);
+      console.log("User logged out.");
+      setAuthErrorMessage("");
+    } catch (error) {
+      console.error("Logout failed:", error.message);
+      setAuthErrorMessage(error.message);
+    }
+  }, []);
+
+  const handleDismissAuthError = useCallback(() => {
+    setAuthErrorMessage("");
+  }, []);
+
   const handleAddWord = useCallback(
     async (newWordTitle) => {
-      const payload = {
-        records: [{ fields: { Word: newWordTitle, IsLearned: false } }],
-      };
-      const options = createOptions("POST", payload);
-      const requestUrl = url;
-
+      if (!user) {
+        setAuthErrorMessage("Please log in to add words.");
+        return;
+      }
       dispatch({ type: wordsActions.startRequest });
       try {
-        const resp = await fetch(requestUrl, options);
-        if (!resp.ok) {
-          throw new Error(resp.message);
-        }
-        const { records } = await resp.json();
-        dispatch({ type: wordsActions.addWord, record: records[0] });
+        const docRef = await addDoc(
+          collection(db, "users", user.uid, "words"),
+          {
+            Word: newWordTitle,
+            IsLearned: false,
+            createdTime: new Date(),
+            userId: user.uid,
+          }
+        );
+        console.log("Word added to Firestore with ID:", docRef.id);
+        dispatch({
+          type: wordsActions.addWord,
+          record: {
+            id: docRef.id,
+            Word: newWordTitle,
+            IsLearned: false,
+            createdTime: new Date().toISOString(),
+            userId: user.uid,
+          },
+        });
         setSearchParams((prevParams) => {
           const newParams = new URLSearchParams(prevParams);
           newParams.set(
@@ -173,90 +285,48 @@ function App() {
           return newParams;
         });
       } catch (error) {
-        console.error("Error adding word:", error);
-        dispatch({ type: wordsActions.setLoadError, error });
+        console.error("Error adding word to Firestore:", error);
+        dispatch({
+          type: wordsActions.setLoadError,
+          error: new Error(`Failed to add word: ${error.message}`),
+        });
       } finally {
         dispatch({ type: wordsActions.endRequest });
       }
     },
-    [
-      createOptions,
-      dispatch,
-      url,
-      wordList.length,
-      itemsPerPage,
-      setSearchParams,
-    ]
+    [dispatch, user, wordList.length, itemsPerPage, setSearchParams]
   );
 
   const updateWord = useCallback(
     async (editedWord) => {
+      if (!user) {
+        setAuthErrorMessage("Please log in to update words.");
+        return;
+      }
       const originalWord = wordList.find((word) => word.id === editedWord.id);
-      if (!originalWord) return;
-
-      const payload = {
-        records: [
-          {
-            id: editedWord.id,
-            fields: {
-              Word: editedWord.Word,
-              IsLearned: editedWord.IsLearned,
-            },
-          },
-        ],
-      };
-      const options = createOptions("PATCH", payload);
-      const requestUrl = url;
+      if (!originalWord) {
+        console.warn(
+          "Update Word - Original word not found for ID:",
+          editedWord.id
+        );
+        return;
+      }
 
       dispatch({ type: wordsActions.updateWord, editedWord: editedWord });
       dispatch({ type: wordsActions.startRequest });
 
       try {
-        const resp = await fetch(`${requestUrl}/${editedWord.id}`, options);
-        if (!resp.ok) {
-          throw new Error(resp.message);
-        }
-      } catch (error) {
-        console.error("Error updating word:", error);
-        dispatch({
-          type: wordsActions.setLoadError,
-          error: new Error(`${error.message}. Reverting word...`),
+        await updateDoc(doc(db, "users", user.uid, "words", editedWord.id), {
+          Word: editedWord.Word,
+          IsLearned: editedWord.IsLearned,
         });
-        dispatch({ type: wordsActions.revertWord, originalWord });
-      } finally {
-        dispatch({ type: wordsActions.endRequest });
-      }
-    },
-    [createOptions, dispatch, wordList, url]
-  );
-
-  const toggleWordLearnedStatus = useCallback(
-    async (id) => {
-      const originalWord = wordList.find((word) => word.id === id);
-      if (!originalWord) return;
-
-      dispatch({ type: wordsActions.toggleLearnedStatus, id });
-      dispatch({ type: wordsActions.startRequest });
-
-      const payload = {
-        records: [
-          { id: id, fields: { IsLearned: !originalWord.fields.IsLearned } },
-        ],
-      };
-      const options = createOptions("PATCH", payload);
-      const requestUrl = url;
-
-      try {
-        const resp = await fetch(`${requestUrl}/${id}`, options);
-        if (!resp.ok) {
-          throw new Error(resp.message);
-        }
+        console.log("Word updated in Firestore for ID:", editedWord.id);
       } catch (error) {
-        console.error("Error toggling word learned status:", error);
+        console.error("Error updating word in Firestore:", error);
         dispatch({
           type: wordsActions.setLoadError,
           error: new Error(
-            `${error.message}. Reverting word learned status...`
+            `Failed to update word: ${error.message}. Reverting...`
           ),
         });
         dispatch({ type: wordsActions.revertWord, originalWord });
@@ -264,87 +334,162 @@ function App() {
         dispatch({ type: wordsActions.endRequest });
       }
     },
-    [createOptions, dispatch, wordList, url]
+    [dispatch, user, wordList]
+  );
+
+  const toggleWordLearnedStatus = useCallback(
+    async (id) => {
+      if (!user) {
+        setAuthErrorMessage("Please log in to update words.");
+        return;
+      }
+      const originalWord = wordList.find((word) => word.id === id);
+      if (!originalWord) {
+        console.warn(
+          "Toggle Learned Status - Original word not found for ID:",
+          id
+        );
+        return;
+      }
+
+      dispatch({ type: wordsActions.toggleLearnedStatus, id });
+      dispatch({ type: wordsActions.startRequest });
+
+      try {
+        await updateDoc(doc(db, "users", user.uid, "words", id), {
+          IsLearned: !originalWord.IsLearned,
+        });
+        console.log("Word learned status toggled in Firestore for ID:", id);
+      } catch (error) {
+        console.error(
+          "Error toggling word learned status in Firestore:",
+          error
+        );
+        dispatch({
+          type: wordsActions.setLoadError,
+          error: new Error(
+            `Failed to toggle status: ${error.message}. Reverting...`
+          ),
+        });
+        dispatch({ type: wordsActions.revertWord, originalWord });
+      } finally {
+        dispatch({ type: wordsActions.endRequest });
+      }
+    },
+    [dispatch, user, wordList]
   );
 
   const deleteWord = useCallback(
     async (id) => {
-      const originalWordListAfterOptimisticDelete = wordList.filter(
-        (word) => word.id !== id
-      );
+      if (!user) {
+        setAuthErrorMessage("Please log in to delete words.");
+        return;
+      }
       const originalWordItem = wordList.find((word) => word.id === id);
+      if (!originalWordItem) {
+        console.warn("Delete Word - Original word not found for ID:", id);
+        return;
+      }
 
+      const originalWordListBeforeOptimisticDelete = [...wordList];
       dispatch({
         type: wordsActions.revertWord,
-        originalWords: originalWordListAfterOptimisticDelete,
+        originalWords: wordList.filter((word) => word.id !== id),
       });
       dispatch({ type: wordsActions.startRequest });
 
-      const requestUrl = url;
-
       try {
-        const resp = await fetch(`${requestUrl}/${id}`, {
-          method: "DELETE",
-          headers: { Authorization: token },
-        });
-
-        if (!resp.ok) {
-          throw new Error(resp.message);
-        }
+        await deleteDoc(doc(db, "users", user.uid, "words", id));
+        console.log("Word deleted from Firestore for ID:", id);
       } catch (error) {
-        console.error("Error deleting word:", error);
+        console.error("Error deleting word from Firestore:", error);
         dispatch({
           type: wordsActions.setLoadError,
-          error: new Error(`${error.message}. Reverting deletion...`),
+          error: new Error(
+            `Failed to delete word: ${error.message}. Reverting...`
+          ),
         });
         dispatch({
           type: wordsActions.revertWord,
-          originalWord: originalWordItem,
+          originalWords: originalWordListBeforeOptimisticDelete,
         });
       } finally {
         dispatch({ type: wordsActions.endRequest });
       }
     },
-    [dispatch, wordList, token, url]
+    [dispatch, user, wordList]
   );
 
   const handleDismissError = useCallback(() => {
-    dispatch({ type: wordsActions.clearError });
-  }, [dispatch]);
+    setAuthErrorMessage("");
+  }, []);
 
   return (
     <div className={styles.app}>
-      <Header title={pageTitle} />
-
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <WordsPage
-              wordList={paginatedAndFilteredWords}
-              isLoading={isLoading}
-              errorMessage={errorMessage}
-              isSaving={isSaving}
-              sortField={sortField}
-              sortDirection={sortDirection}
-              queryString={queryString}
-              dispatch={dispatch}
-              handleAddWord={handleAddWord}
-              updateWord={updateWord}
-              toggleWordLearnedStatus={toggleWordLearnedStatus}
-              deleteWord={deleteWord}
-              handleDismissError={handleDismissError}
-              wordActions={wordsActions}
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPreviousPage={handlePreviousPage}
-              onNextPage={handleNextPage}
+      <Header />
+      {authLoading ? (
+        <div className={styles.loadingContainer}>
+          <p>Loading app (checking login status)...</p>
+        </div>
+      ) : user ? (
+        <>
+          <div className={styles.loggedInStatus}>
+            <p>
+              Logged in as: <strong>{user.email || "Anonymous"}</strong>
+            </p>
+            <button onClick={handleLogout} className={styles.logoutButton}>
+              Logout
+            </button>
+          </div>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <WordsPage
+                  wordList={paginatedAndFilteredWords}
+                  isLoading={isLoading}
+                  errorMessage={errorMessage}
+                  isSaving={isSaving}
+                  sortField={sortField}
+                  sortDirection={sortDirection}
+                  queryString={queryString}
+                  dispatch={dispatch}
+                  handleAddWord={handleAddWord}
+                  updateWord={updateWord}
+                  toggleWordLearnedStatus={toggleWordLearnedStatus}
+                  deleteWord={deleteWord}
+                  handleDismissError={handleDismissError}
+                  wordActions={wordsActions}
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPreviousPage={handlePreviousPage}
+                  onNextPage={handleNextPage}
+                />
+              }
             />
-          }
-        />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/*" element={<NotFound />} />
-      </Routes>
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/*" element={<NotFound />} />
+          </Routes>
+        </>
+      ) : (
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <div className={styles.authPageContainer}>
+                <AuthForm
+                  onLogin={handleLogin}
+                  onSignup={handleSignup}
+                  onDismissError={handleDismissAuthError}
+                  authError={authErrorMessage}
+                />
+              </div>
+            }
+          />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/*" element={<NotFound />} />
+        </Routes>
+      )}
     </div>
   );
 }

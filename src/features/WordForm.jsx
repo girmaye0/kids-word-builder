@@ -1,88 +1,137 @@
-import React, { useState, useRef } from "react";
-import styled from "styled-components";
-import TextInputWithLabel from "../shared/TextInputWithLabel"; // Changed from WordInputWithLabel back to TextInputWithLabel as per available artifacts
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import WordInputWithLabel from "../shared/WordInputWithLabel";
+import styles from "./WordForm.module.css";
 
-const StyledForm = styled.form`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  padding-bottom: 10px;
-  margin-bottom: 20px;
-  width: 100%;
-`;
-
-const StyledButton = styled.button`
-  padding: 10px 10px;
-  border: none;
-  border-radius: 5px;
-  background-color: #4caf50;
-  color: white;
-  cursor: pointer;
-  font-size: 1em;
-  transition: background-color 0.3s ease;
-  margin-left: 8px;
-
-  &:hover {
-    background-color: #367c39;
-  }
-
-  &:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-    font-style: italic;
-  }
-`;
-
-const StyledInputAndButtonContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  width: 100%; /* Ensure this container takes full width */
-`;
+const MERRIAM_WEBSTER_API_KEY = import.meta.env.VITE_MERRIAM_WEBSTER_API_KEY;
+const API_BASE_URL =
+  "https://www.dictionaryapi.com/api/v3/references/collegiate/json/";
 
 function WordForm({ onAddWord, isSaving }) {
-  // Renamed onAddTodo to onAddWord
-  const [newWord, setNewWord] = useState(""); // Renamed title to newWord
-  const wordInputRef = useRef(null); // Renamed todoTitleInput to wordInputRef
+  const [word, setWord] = useState("");
+  const [isValid, setIsValid] = useState(false);
+  const [isCheckingSpelling, setIsCheckingSpelling] = useState(false);
+  const wordInputRef = useRef(null);
+  const debounceTimeoutRef = useRef(null);
 
-  const handleInputChange = (event) => {
-    setNewWord(event.target.value); // Use setNewWord
-  };
+  const checkSpellingWithApi = useCallback(
+    async (inputWord) => {
+      if (!MERRIAM_WEBSTER_API_KEY) {
+        setIsValid(false);
+        setIsCheckingSpelling(false);
+        return false;
+      }
 
-  const handleAddWord = (event) => {
-    // Renamed handleAddTodo to handleAddWord
-    event.preventDefault();
-    if (newWord.trim()) {
-      // Use newWord
-      onAddWord(newWord.trim()); // Use onAddWord, newWord
-      setNewWord(""); // Use setNewWord
-      wordInputRef.current.focus(); // Use wordInputRef
+      if (!inputWord.trim()) {
+        setIsValid(false);
+        setIsCheckingSpelling(false);
+        return false;
+      }
+
+      setIsCheckingSpelling(true);
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}${inputWord.toLowerCase().trim()}?key=${MERRIAM_WEBSTER_API_KEY}`
+        );
+        if (!response.ok) {
+          console.error(
+            `Merriam-Webster API Error: ${response.status} - ${response.statusText}`
+          );
+          setIsValid(false);
+          return false;
+        }
+
+        const data = await response.json();
+
+        const isWordFound =
+          Array.isArray(data) &&
+          data.length > 0 &&
+          typeof data[0] === "object" &&
+          data[0].hasOwnProperty("meta");
+
+        setIsValid(isWordFound);
+        return isWordFound;
+      } catch (error) {
+        console.error(
+          "Error checking spelling with Merriam-Webster API:",
+          error
+        );
+        setIsValid(false);
+        return false;
+      } finally {
+        setIsCheckingSpelling(false);
+      }
+    },
+    [MERRIAM_WEBSTER_API_KEY]
+  );
+
+  const handleWordChange = (e) => {
+    const newWord = e.target.value;
+    setWord(newWord);
+
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+
+    if (newWord.trim().length > 0) {
+      debounceTimeoutRef.current = setTimeout(() => {
+        checkSpellingWithApi(newWord);
+      }, 500);
+    } else {
+      setIsValid(false);
+      setIsCheckingSpelling(false);
     }
   };
 
+  const handleAddWord = (e) => {
+    e.preventDefault();
+    if (word.trim() && isValid && !isSaving && !isCheckingSpelling) {
+      onAddWord(word.trim());
+      setWord("");
+      setIsValid(false);
+      if (wordInputRef.current) {
+        wordInputRef.current.focus();
+      }
+    }
+  };
+
+  const inputClassName = `${styles.wordInput} ${
+    word.trim() === ""
+      ? ""
+      : isCheckingSpelling
+        ? styles.checkingInput
+        : isValid
+          ? styles.validInput
+          : styles.invalidInput
+  }`;
+
   return (
-    <StyledForm onSubmit={handleAddWord}>
-      {" "}
-      {/* Use handleAddWord */}
-      <StyledInputAndButtonContainer>
-        <TextInputWithLabel
-          elementId="wordTitle" // Renamed elementId to wordTitle
-          label="Word" // Renamed label to Word
-          value={newWord} // Use newWord
-          ref={wordInputRef} // Use wordInputRef
-          onChange={handleInputChange}
-          style={{
-            flex: 1,
-          }}
+    <form onSubmit={handleAddWord} className={styles.wordForm}>
+      <div className={styles.inputAndButtonContainer}>
+        <WordInputWithLabel
+          elementId="wordTitle"
+          label="Word"
+          value={word}
+          onChange={handleWordChange}
+          ref={wordInputRef}
+          className={inputClassName}
+          style={{ flex: 1 }}
+          disabled={isSaving || isCheckingSpelling}
         />
-        <StyledButton
+        <button
           type="submit"
-          disabled={newWord.trim() === "" || isSaving} // Use newWord
+          disabled={
+            word.trim() === "" || !isValid || isSaving || isCheckingSpelling
+          }
+          className={styles.addButton}
         >
-          {isSaving ? "Adding..." : "Add Word"} {/* Updated button text */}
-        </StyledButton>
-      </StyledInputAndButtonContainer>
-    </StyledForm>
+          {isSaving
+            ? "Adding..."
+            : isCheckingSpelling
+              ? "Checking..."
+              : "Add Word"}
+        </button>
+      </div>
+    </form>
   );
 }
 

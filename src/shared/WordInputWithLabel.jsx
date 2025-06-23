@@ -6,7 +6,7 @@ const Container = styled.div`
   flex-direction: row;
   align-items: center;
   gap: 8px;
-  width: 50%; /* Consider making this responsive or pass as a prop if it needs to change */
+  flex: 1; /* Allow this container to take available space */
 `;
 
 const StyledLabel = styled.label`
@@ -24,7 +24,7 @@ const StyledInput = styled.input`
   border-radius: 4px;
   font-size: 1rem;
   flex: 1;
-  width: 0;
+  width: 0; /* Important for flex items with flex-grow to shrink properly */
   min-width: 0;
   &:focus {
     border-color: #007bff;
@@ -33,9 +33,9 @@ const StyledInput = styled.input`
 `;
 
 const WordInputWithLabel = forwardRef(
-  ({ elementId, label, value, onChange }, ref) => {
+  ({ elementId, label, value, onChange, className, ...props }, ref) => {
     return (
-      <Container>
+      <Container {...props}>
         <StyledLabel htmlFor={elementId}>{label}</StyledLabel>
         <StyledInput
           type="text"
@@ -43,6 +43,7 @@ const WordInputWithLabel = forwardRef(
           value={value}
           onChange={onChange}
           ref={ref}
+          className={className}
         />
       </Container>
     );

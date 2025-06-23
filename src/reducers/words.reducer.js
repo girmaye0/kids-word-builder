@@ -1,4 +1,4 @@
-const actions = {
+export const actions = {
   fetchWords: "FETCH_WORDS",
   loadWords: "LOAD_WORDS",
   setLoadError: "SET_LOAD_ERROR",
@@ -14,7 +14,7 @@ const actions = {
   setQueryString: "SET_QUERY_STRING",
 };
 
-const initialState = {
+export const initialState = {
   wordList: [],
   isLoading: false,
   errorMessage: "",
@@ -24,7 +24,7 @@ const initialState = {
   queryString: "",
 };
 
-const reducer = (state = initialState, action) => {
+export const reducer = (state = initialState, action) => {
   switch (action.type) {
     case actions.fetchWords:
       return { ...state, isLoading: true, errorMessage: "" };
@@ -32,11 +32,8 @@ const reducer = (state = initialState, action) => {
     case actions.loadWords:
       const fetchedWords = action.records.map((record) => ({
         id: record.id,
-        fields: {
-          Word: record.fields.Word || "",
-          IsLearned: record.fields.IsLearned || false,
-          ...record.fields,
-        },
+        Word: record.Word || "",
+        IsLearned: record.IsLearned || false,
         createdTime: record.createdTime,
       }));
       return { ...state, wordList: fetchedWords, isLoading: false };
@@ -44,11 +41,8 @@ const reducer = (state = initialState, action) => {
     case actions.addWord:
       const savedWord = {
         id: action.record.id,
-        fields: {
-          Word: action.record.fields.Word || "",
-          IsLearned: action.record.fields.IsLearned || false,
-          ...action.record.fields,
-        },
+        Word: action.record.Word || "",
+        IsLearned: action.record.IsLearned || false,
         createdTime: action.record.createdTime,
       };
       return {
@@ -102,30 +96,18 @@ const reducer = (state = initialState, action) => {
       return state;
 
     case actions.updateWord:
-      const updatedWordList = state.wordList.map((word) =>
-        word.id === action.editedWord.id ? { ...action.editedWord } : word
-      );
-
-      let newState = {
+      return {
         ...state,
-        wordList: updatedWordList,
+        wordList: state.wordList.map((word) =>
+          word.id === action.editedWord.id ? { ...action.editedWord } : word
+        ),
       };
-
-      if (action.error) {
-        newState.errorMessage = action.error.message;
-      }
-      return newState;
 
     case actions.toggleLearnedStatus:
       return {
         ...state,
         wordList: state.wordList.map((word) =>
-          word.id === action.id
-            ? {
-                ...word,
-                fields: { ...word.fields, IsLearned: !word.fields.IsLearned },
-              }
-            : word
+          word.id === action.id ? { ...word, IsLearned: !word.IsLearned } : word
         ),
       };
 
@@ -133,5 +115,3 @@ const reducer = (state = initialState, action) => {
       return state;
   }
 };
-
-export { actions, initialState, reducer };

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import TextInputWithLabel from "../../shared/TextInputWithLabel"; // Assuming TextInputWithLabel is used, not WordInputWithLabel unless you created it
-import styles from "./WordListItem.module.css"; // Corrected module name to WordListItem.module.css
-import checkbox from "../../assets/checkbox.png"; // Assuming checkbox image is still used
+import WordInputWithLabel from "../../shared/WordInputWithLabel";
+import styles from "./WordListItem.module.css";
+import { FaVolumeUp } from "react-icons/fa";
 
 function WordListItem({
   word,
@@ -9,9 +9,8 @@ function WordListItem({
   onUpdateWord,
   onDeleteWord,
 }) {
-  // Renamed props
   const [isEditing, setIsEditing] = useState(false);
-  const [workingWord, setWorkingWord] = useState(word.fields.Word); // Access word.fields.Word
+  const [workingWord, setWorkingWord] = useState(word.Word);
   const editInputRef = useRef(null);
 
   useEffect(() => {
@@ -21,22 +20,19 @@ function WordListItem({
   }, [isEditing]);
 
   useEffect(() => {
-    setWorkingWord(word.fields.Word); // Update workingWord if word.fields.Word prop changes
-  }, [word.fields.Word]);
+    setWorkingWord(word.Word);
+  }, [word.Word]);
 
   const handleEditChange = (event) => {
-    // Renamed handleEdit to handleEditChange for clarity
     setWorkingWord(event.target.value);
   };
 
   const handleUpdate = () => {
-    if (isEditing && workingWord.trim() && workingWord !== word.fields.Word) {
-      // Compare with word.fields.Word
+    if (isEditing && workingWord.trim() && workingWord !== word.Word) {
       onUpdateWord({
-        // Use onUpdateWord prop
         id: word.id,
-        Word: workingWord.trim(), // Use 'Word' field name
-        IsLearned: word.fields.IsLearned, // Use 'IsLearned' field name
+        Word: workingWord.trim(),
+        IsLearned: word.IsLearned,
       });
       setIsEditing(false);
     } else {
@@ -45,33 +41,37 @@ function WordListItem({
   };
 
   const handleCancel = () => {
-    setWorkingWord(word.fields.Word); // Revert to original word.fields.Word
+    setWorkingWord(word.Word);
     setIsEditing(false);
+  };
+
+  const speakWord = (text) => {
+    if ("speechSynthesis" in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "en-US";
+      window.speechSynthesis.speak(utterance);
+    } else {
+      console.warn("Speech synthesis not supported in this browser.");
+    }
   };
 
   return (
     <li className={styles.wordItem}>
-      {" "}
-      {/* Changed class from todoListItem to wordItem */}
       {isEditing ? (
         <div className={styles.editContainer}>
-          {" "}
-          {/* Apply CSS Module style */}
-          <TextInputWithLabel
-            label="Word" // Changed label to "Word"
+          <WordInputWithLabel
+            label="Word"
             value={workingWord}
-            onChange={handleEditChange} // Use handleEditChange
+            onChange={handleEditChange}
             ref={editInputRef}
             elementId={`editInput-${word.id}`}
-            className={styles.editInput} // Apply CSS Module style
+            className={styles.editInput}
           />
           <button
             type="button"
             onClick={handleUpdate}
             className={styles.saveButton}
           >
-            {" "}
-            {/* Apply CSS Module style */}
             Update
           </button>
           <button
@@ -79,49 +79,38 @@ function WordListItem({
             onClick={handleCancel}
             className={styles.cancelButton}
           >
-            {" "}
-            {/* Apply CSS Module style */}
             Cancel
           </button>
         </div>
       ) : (
         <div className={styles.displayContainer}>
-          {" "}
-          {/* Apply CSS Module style */}
           <label className={styles.label}>
-            {" "}
-            {/* Apply CSS Module style */}
-            <img
-              src={checkbox}
-              alt={word.fields.IsLearned ? "Learned" : "Not Learned"} // Alt text for accessibility
-              className={styles.checkboxImage} // Apply CSS Module style
-              onClick={() => toggleWordLearnedStatus(word.id)} // Use toggleWordLearnedStatus
-            />
             <input
               type="checkbox"
               id={`checkbox${word.id}`}
-              checked={word.fields.IsLearned} // Access word.fields.IsLearned
-              onChange={() => toggleWordLearnedStatus(word.id)} // Use toggleWordLearnedStatus
-              className={styles.hiddenCheckbox} // Style to hide native checkbox if using image
+              checked={word.IsLearned}
+              onChange={() => toggleWordLearnedStatus(word.id)}
+              className={styles.checkbox}
             />
           </label>
           <span
             className={
-              word.fields.IsLearned
-                ? styles.completedWordTitle
-                : styles.wordTitle // Apply CSS Module styles, use 'Word'
+              word.IsLearned ? styles.completedWordTitle : styles.wordTitle
             }
             onClick={() => setIsEditing(true)}
           >
-            {word.fields.Word} {/* Access word.fields.Word */}
+            {word.Word}
           </span>
+          <FaVolumeUp
+            className={styles.speakerIcon}
+            onClick={() => speakWord(word.Word)}
+            title="Pronounce word"
+          />
           <button
             type="button"
             onClick={() => onDeleteWord(word.id)}
             className={styles.deleteButton}
           >
-            {" "}
-            {/* Use onDeleteWord */}
             Delete
           </button>
         </div>
