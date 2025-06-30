@@ -56,7 +56,7 @@ function AuthForm({ onLogin, onSignup, onDismissError, authError }) {
             type="button"
             onClick={() => {
               setIsLoginMode((prevMode) => !prevMode);
-              setAuthError("");
+              onDismissError();
               setEmail("");
               setPassword("");
             }}

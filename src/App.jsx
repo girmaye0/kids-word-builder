@@ -54,9 +54,9 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+let app;
+let auth;
+let db;
 
 function App() {
   const [wordState, dispatch] = useReducer(wordsReducer, initialWordsState);
@@ -67,6 +67,39 @@ function App() {
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [authErrorMessage, setAuthErrorMessage] = useState("");
+  const [firebaseInitError, setFirebaseInitError] = useState(null);
+  const firebaseInitializedRef = React.useRef(false);
+
+  useEffect(() => {
+    if (!firebaseInitializedRef.current) {
+      try {
+        app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+        firebaseInitializedRef.current = true;
+        console.log("Firebase initialized successfully.");
+      } catch (e) {
+        console.error("Firebase initialization failed:", e);
+        setFirebaseInitError(e);
+        setAuthLoading(false);
+        return;
+      }
+    }
+
+    if (!firebaseInitError) {
+      const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+        setUser(currentUser);
+        setAuthLoading(false);
+        if (currentUser) {
+          console.log("User logged in:", currentUser.email || currentUser.uid);
+        } else {
+          console.log("User logged out or not authenticated.");
+          dispatch({ type: wordsActions.loadWords, records: [] });
+        }
+      });
+      return () => unsubscribe();
+    }
+  }, [firebaseInitError]);
 
   const {
     wordList,
@@ -79,26 +112,11 @@ function App() {
   } = wordState;
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setAuthLoading(false);
-      if (currentUser) {
-        console.log("User logged in:", currentUser.email || currentUser.uid);
-      } else {
-        console.log("User logged out or not authenticated.");
-        dispatch({ type: wordsActions.loadWords, records: [] });
-      }
-    });
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
     const fetchWords = async () => {
-      if (authLoading) {
-        return;
-      }
-      if (!user) {
-        dispatch({ type: wordsActions.loadWords, records: [] });
+      if (authLoading || firebaseInitError || !user) {
+        if (!user && !authLoading) {
+          dispatch({ type: wordsActions.loadWords, records: [] });
+        }
         return;
       }
 
@@ -142,8 +160,7 @@ function App() {
       }
     };
     fetchWords();
-  }, [user, authLoading, sortField, sortDirection]);
-
+  }, [user, authLoading, sortField, sortDirection, firebaseInitError]);
   const itemsPerPage = 15;
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
 
@@ -207,33 +224,51 @@ function App() {
     }
   }, [currentPage, totalPages, navigate]);
 
-  const handleLogin = useCallback(async (email, password) => {
-    try {
-      setAuthErrorMessage("");
-      await signInWithEmailAndPassword(auth, email, password);
-      console.log("User logged in successfully!");
-      return { success: true };
-    } catch (error) {
-      console.error("Login failed:", error.message);
-      setAuthErrorMessage(error.message);
-      return { success: false, error: error.message };
-    }
-  }, []);
+  const handleLogin = useCallback(
+    async (email, password) => {
+      if (firebaseInitError) {
+        setAuthErrorMessage("Firebase is not initialized. Cannot log in.");
+        return { success: false, error: "Firebase not initialized" };
+      }
+      try {
+        setAuthErrorMessage("");
+        await signInWithEmailAndPassword(auth, email, password);
+        console.log("User logged in successfully!");
+        return { success: true };
+      } catch (error) {
+        console.error("Login failed:", error.message);
+        setAuthErrorMessage(error.message);
+        return { success: false, error: error.message };
+      }
+    },
+    [firebaseInitError]
+  );
 
-  const handleSignup = useCallback(async (email, password) => {
-    try {
-      setAuthErrorMessage("");
-      await createUserWithEmailAndPassword(auth, email, password);
-      console.log("User signed up successfully!");
-      return { success: true };
-    } catch (error) {
-      console.error("Signup failed:", error.message);
-      setAuthErrorMessage(error.message);
-      return { success: false, error: error.message };
-    }
-  }, []);
+  const handleSignup = useCallback(
+    async (email, password) => {
+      if (firebaseInitError) {
+        setAuthErrorMessage("Firebase is not initialized. Cannot sign up.");
+        return { success: false, error: "Firebase not initialized" };
+      }
+      try {
+        setAuthErrorMessage("");
+        await createUserWithEmailAndPassword(auth, email, password);
+        console.log("User signed up successfully!");
+        return { success: true };
+      } catch (error) {
+        console.error("Signup failed:", error.message);
+        setAuthErrorMessage(error.message);
+        return { success: false, error: error.message };
+      }
+    },
+    [firebaseInitError]
+  );
 
   const handleLogout = useCallback(async () => {
+    if (firebaseInitError) {
+      setAuthErrorMessage("Firebase is not initialized. Cannot log out.");
+      return;
+    }
     try {
       await signOut(auth);
       console.log("User logged out.");
@@ -242,7 +277,7 @@ function App() {
       console.error("Logout failed:", error.message);
       setAuthErrorMessage(error.message);
     }
-  }, []);
+  }, [firebaseInitError]);
 
   const handleDismissAuthError = useCallback(() => {
     setAuthErrorMessage("");
@@ -250,6 +285,10 @@ function App() {
 
   const handleAddWord = useCallback(
     async (newWordTitle) => {
+      if (firebaseInitError) {
+        setAuthErrorMessage("Firebase is not initialized. Cannot add words.");
+        return;
+      }
       if (!user) {
         setAuthErrorMessage("Please log in to add words.");
         return;
@@ -294,11 +333,24 @@ function App() {
         dispatch({ type: wordsActions.endRequest });
       }
     },
-    [dispatch, user, wordList.length, itemsPerPage, setSearchParams]
+    [
+      dispatch,
+      user,
+      wordList.length,
+      itemsPerPage,
+      setSearchParams,
+      firebaseInitError,
+    ]
   );
 
   const updateWord = useCallback(
     async (editedWord) => {
+      if (firebaseInitError) {
+        setAuthErrorMessage(
+          "Firebase is not initialized. Cannot update words."
+        );
+        return;
+      }
       if (!user) {
         setAuthErrorMessage("Please log in to update words.");
         return;
@@ -334,11 +386,17 @@ function App() {
         dispatch({ type: wordsActions.endRequest });
       }
     },
-    [dispatch, user, wordList]
+    [dispatch, user, wordList, firebaseInitError]
   );
 
   const toggleWordLearnedStatus = useCallback(
     async (id) => {
+      if (firebaseInitError) {
+        setAuthErrorMessage(
+          "Firebase is not initialized. Cannot update words."
+        );
+        return;
+      }
       if (!user) {
         setAuthErrorMessage("Please log in to update words.");
         return;
@@ -376,11 +434,17 @@ function App() {
         dispatch({ type: wordsActions.endRequest });
       }
     },
-    [dispatch, user, wordList]
+    [dispatch, user, wordList, firebaseInitError]
   );
 
   const deleteWord = useCallback(
     async (id) => {
+      if (firebaseInitError) {
+        setAuthErrorMessage(
+          "Firebase is not initialized. Cannot delete words."
+        );
+        return;
+      }
       if (!user) {
         setAuthErrorMessage("Please log in to delete words.");
         return;
@@ -417,17 +481,27 @@ function App() {
         dispatch({ type: wordsActions.endRequest });
       }
     },
-    [dispatch, user, wordList]
+    [dispatch, user, wordList, firebaseInitError]
   );
 
   const handleDismissError = useCallback(() => {
     setAuthErrorMessage("");
+    setFirebaseInitError(null);
   }, []);
 
   return (
     <div className={styles.app}>
       <Header />
-      {authLoading ? (
+      {firebaseInitError ? (
+        <div className={styles.errorContainer}>
+          <p>Error initializing Firebase:</p>
+          <p>{firebaseInitError.message}</p>
+          <p>
+            Please check your Firebase configuration and network connection.
+          </p>
+          <button onClick={handleDismissError}>Dismiss</button>
+        </div>
+      ) : authLoading ? (
         <div className={styles.loadingContainer}>
           <p>Loading app (checking login status)...</p>
         </div>
