@@ -48,6 +48,7 @@ VITE_FIREBASE_PROJECT_ID="YOUR_FIREBASE_PROJECT_ID"
 VITE_FIREBASE_STORAGE_BUCKET="YOUR_FIREBASE_STORAGE_BUCKET"
 VITE_FIREBASE_MESSAGING_SENDER_ID="YOUR_FIREBASE_MESSAGING_SENDER_ID"
 VITE_FIREBASE_APP_ID="YOUR_FIREBASE_APP_ID"
+VITE_MERRIAM_WEBSTER_API_KEY="YOUR_MERRIAM_WEBSTER_API_KEY"
 
 Replace the placeholder values with your actual Firebase project configuration values.
 
@@ -141,3 +142,5 @@ Firebase: A Google platform providing backend services, including Firestore (NoS
 CSS Modules: For component-scoped styling.
 
 styled-components: For writing CSS-in-JS.
+
+Merriam-Webster Collegiate Dictionary API: Used for real-time spell-checking during word creation.
